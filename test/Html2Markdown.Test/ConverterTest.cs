@@ -114,7 +114,7 @@ namespace Html2Markdown.Test
 		}
 
 		[Test]
-		public void Convert_WhenThereAreBreakTags_ThenConvertToMarkDownDoubleSpacesWitCarriageReturns()
+		public void Convert_WhenThereAreBreakTags_ThenConvertToMarkDownDoubleSpacesWithCarriageReturns()
 		{
 			const string html = @"So this text has a break.<br/>Convert it.";
 			const string expected = @"So this text has a break.  
@@ -761,22 +761,6 @@ a comment
 		}
 
 		[Test]
-		public void ConvertFile_WhenReadingInHtmlFile_ThenConvertToMarkdown()
-		{
-			const string sourcePath = @"..\..\Files\TestHtml.txt";
-			const string expected = @"## Installing via NuGet
-
-        Install-Package Html2Markdown
-
-## Usage
-
-        var converter = new Converter();
-        var result = converter.Convert(html);";
-
-			CheckFileConversion(sourcePath, expected);
-		}
-
-		[Test]
 		public void Convert_ComplexTest_001()
 		{
 			const string html =
@@ -960,6 +944,40 @@ If you want to play with this application you can fork or browse it on [GitHub](
 > **— Johann Wolfgang von Goethe**";
 
 			CheckConversion(html, expected);
+		}
+
+		[Test]
+		public void Convert_WhenThereIsAnHtmlTable_ThenDoNotConvertContainedHtmlToMarkdown()
+		{
+			const string html = @"<table><tr><td><strong>Don't convert me</strong></td></tr></table>";
+			const string expected = @"<table><tr><td><strong>Don't convert me</strong></td></tr></table>";
+
+			CheckConversion(html, expected);
+		}
+
+		[Test]
+		public void Convert_WhenThereIsADiv_ThenDoNotConvertContainedHtmlToMarkdown()
+		{
+			const string html = @"<div><strong>Don't convert me</strong></div>";
+			const string expected = @"<div><strong>Don't convert me</strong></div>";
+
+			CheckConversion(html, expected);
+		}
+
+		[Test]
+		public void ConvertFile_WhenReadingInHtmlFile_ThenConvertToMarkdown()
+		{
+			const string sourcePath = @"..\..\Files\TestHtml.txt";
+			const string expected = @"## Installing via NuGet
+
+        Install-Package Html2Markdown
+
+## Usage
+
+        var converter = new Converter();
+        var result = converter.Convert(html);";
+
+			CheckFileConversion(sourcePath, expected);
 		}
 
 		private static void CheckFileConversion(string path, string expected)

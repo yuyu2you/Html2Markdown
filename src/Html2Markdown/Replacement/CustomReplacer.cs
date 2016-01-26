@@ -1,14 +1,15 @@
 ﻿using System;
+using HtmlAgilityPack;
 
 namespace Html2Markdown.Replacement
 {
 	internal class CustomReplacer : IReplacer
 	{
-		public string Replace(string html)
+		public string Replace(HtmlNode element)
 		{
-			return CustomAction.Invoke(html);
+			return CustomAction.Invoke(element);
 		}
 
-		public Func<string, string> CustomAction { get; set; }
+		public Func<HtmlNode, string> CustomAction { get; set; }
 	}
 }

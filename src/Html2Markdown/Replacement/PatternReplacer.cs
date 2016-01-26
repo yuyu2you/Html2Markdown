@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using HtmlAgilityPack;
 
 namespace Html2Markdown.Replacement
 {
@@ -7,11 +8,11 @@ namespace Html2Markdown.Replacement
 		public string Pattern { get; set; }
 
 		public string Replacement { get; set; }
-		public string Replace(string html)
-		{
-			var regex = new Regex(Pattern);
+		
 
-			return regex.Replace(html, Replacement);
+		public string Replace(HtmlNode element)
+		{
+			throw new System.NotImplementedException();
 		}
 	}
 }

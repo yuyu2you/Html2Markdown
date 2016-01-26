@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text.RegularExpressions;
 using Html2Markdown.Replacement;
+using HtmlAgilityPack;
 
 namespace Html2Markdown
 {
@@ -12,142 +11,111 @@ namespace Html2Markdown
 	/// </summary>
 	public class Converter
 	{
-		private readonly IList<IReplacer> _replacers = new List<IReplacer>
-		{
-			new PatternReplacer
-			{
-				Pattern = @"</?(strong|b)>",
-				Replacement = @"**"
-			},
-			new PatternReplacer
-			{
-				Pattern = @"</?(em|i)>",
-				Replacement = @"*"
-			},
-			new PatternReplacer
-			{
-				Pattern = @"<br[^>]*>",
-				Replacement = @"  " + Environment.NewLine
-			},
-			new PatternReplacer
-			{
-				Pattern = @"</h[1-6]>",
-				Replacement = Environment.NewLine + Environment.NewLine
-			},
-			new PatternReplacer
-			{
-				Pattern = @"<h1[^>]*>",
-				Replacement = Environment.NewLine + Environment.NewLine + "# "
-			},
-			new PatternReplacer
-			{
-				Pattern = @"<h2[^>]*>",
-				Replacement = Environment.NewLine + Environment.NewLine + "## "
-			},
-			new PatternReplacer
-			{
-				Pattern = @"<h3[^>]*>",
-				Replacement = Environment.NewLine + Environment.NewLine + "### "
-			},
-			new PatternReplacer
-			{
-				Pattern = @"<h4[^>]*>",
-				Replacement = Environment.NewLine + Environment.NewLine + "#### "
-			},
-			new PatternReplacer
-			{
-				Pattern = @"<h5[^>]*>",
-				Replacement = Environment.NewLine + Environment.NewLine + "##### "
-			},
-			new PatternReplacer
-			{
-				Pattern = @"<h6[^>]*>",
-				Replacement = Environment.NewLine + Environment.NewLine + "###### "
-			},
-			new PatternReplacer
-			{
-				Pattern = @"<hr[^>]*>",
-				Replacement = Environment.NewLine + Environment.NewLine + "* * *" + Environment.NewLine
-			},
-			new PatternReplacer
-			{
-				Pattern = @"<!DOCTYPE[^>]*>",
-				Replacement = ""
-			},
-			new PatternReplacer
-			{
-				Pattern = @"</?html[^>]*>",
-				Replacement = ""
-			},
-			new PatternReplacer
-			{
-				Pattern = @"</?head[^>]*>",
-				Replacement = ""
-			},
-			new PatternReplacer
-			{
-				Pattern = @"</?body[^>]*>",
-				Replacement = ""
-			},
-			new PatternReplacer
-			{
-				Pattern = @"<title[^>]*>.*?</title>",
-				Replacement = ""
-			},
-			new PatternReplacer
-			{
-				Pattern = @"<meta[^>]*>",
-				Replacement = ""
-			},
-			new PatternReplacer
-			{
-				Pattern = @"<link[^>]*>",
-				Replacement = ""
-			},
-			new PatternReplacer
-			{
-				Pattern = @"<!--[^-]+-->",
-				Replacement = ""
-			},
-			new CustomReplacer
-			{
-				CustomAction = HtmlParser.ReplaceImg
-			},
-			new CustomReplacer
-			{
-				CustomAction = HtmlParser.ReplaceLists
-			},
-			new CustomReplacer
-			{
-				CustomAction = HtmlParser.ReplaceAnchor
-			},
-			new CustomReplacer
-			{
-				CustomAction = HtmlParser.ReplaceCode
-			},
-			new CustomReplacer
-			{
-				CustomAction = HtmlParser.ReplacePre
-			},
-			new PatternReplacer
-			{
-				Pattern = @"<p[^>]*>",
-				Replacement = Environment.NewLine + Environment.NewLine
-			},
-			new PatternReplacer
-			{
-				Pattern = @"</p>",
-				Replacement = Environment.NewLine
-			},
-			new CustomReplacer
-			{
-				CustomAction = HtmlParser.ReplaceBlockquote
-			},
-			new CustomReplacer
-			{
-				CustomAction = HtmlParser.ReplaceEntites
-			}
-		};
+		private readonly IDictionary<string, IReplacer> _newReplacers = new Dictionary<string, IReplacer>
+				{
+					{
+						"blockquote", new CustomReplacer
+							{
+								CustomAction = HtmlParser.ReplaceBlockquote
+							}
+					},
+					{
+						"b", new CustomReplacer
+							{
+								CustomAction = HtmlParser.ReplaceStrong
+							}
+					},
+					{
+						"strong", new CustomReplacer
+							{
+								CustomAction = HtmlParser.ReplaceStrong
+							}
+					},
+					{
+						"br", new CustomReplacer
+							{
+								CustomAction = HtmlParser.ReplaceBreak
+							}
+					},
+					{
+						"em", new CustomReplacer
+							{
+								CustomAction = HtmlParser.ReplaceEmphasis
+							}
+					},
+					{
+						"i", new CustomReplacer
+							{
+								CustomAction = HtmlParser.ReplaceEmphasis
+							}
+					},
+					{
+						"h1", new CustomReplacer
+							{
+								CustomAction = HtmlParser.ReplaceHeading
+							}
+					},
+					{
+						"h2", new CustomReplacer
+							{
+								CustomAction = HtmlParser.ReplaceHeading
+							}
+					},
+					{
+						"h3", new CustomReplacer
+							{
+								CustomAction = HtmlParser.ReplaceHeading
+							}
+					},
+					{
+						"h4", new CustomReplacer
+							{
+								CustomAction = HtmlParser.ReplaceHeading
+							}
+					},
+					{
+						"h5", new CustomReplacer
+							{
+								CustomAction = HtmlParser.ReplaceHeading
+							}
+					},
+					{
+						"h6", new CustomReplacer
+							{
+								CustomAction = HtmlParser.ReplaceHeading
+							}
+					},
+					{
+						"hr", new CustomReplacer
+							{
+								CustomAction = HtmlParser.HorizontalRule
+							}
+					},
+					{
+						"a", new CustomReplacer
+							{
+								CustomAction = HtmlParser.ReplaceAnchor
+							}
+					},
+					{
+						"img", new CustomReplacer
+							{
+								CustomAction = HtmlParser.ReplaceImg
+							}
+					},
+					{
+						"p", new CustomReplacer
+							{
+								CustomAction = HtmlParser.ReplaceParagraph
+							}
+					},
+					{
+						"body", new CustomReplacer
+							{
+								CustomAction = HtmlParser.ReplaceBody
+							}
+					}
+				};
 
 		/// <summary>
 		/// Converts Html contained in a file to a Markdown string
@@ -176,7 +144,39 @@ namespace Html2Markdown
 		/// <returns>A Markdown representation of the passed in Html</returns>
 		public string Convert(string html)
 		{
-			return CleanWhiteSpace(_replacers.Aggregate(html, (current, element) => element.Replace(current)));
+			var document = new HtmlDocument();
+			document.LoadHtml(html);
+			var newDocument = new HtmlDocument();
+
+			foreach (var node in document.DocumentNode.ChildNodes)
+			{
+				newDocument.DocumentNode.AppendChild(HtmlNode.CreateNode(ParseElement(node)));
+			}
+
+			return CleanWhiteSpace(newDocument.DocumentNode.InnerHtml);
+		}
+
+		private string ParseElement(HtmlNode element)
+		{
+			var tagName = element.Name;
+			
+			if (HasTagReplacer(tagName))
+			{
+				var replacer = GetTagReplacer(tagName);
+				return replacer.Replace(element);
+			}
+			
+			return element.OuterHtml;
+		}
+
+		private IReplacer GetTagReplacer(string tagName)
+		{
+			return _newReplacers[tagName];
+		}
+
+		private bool HasTagReplacer(string tagName)
+		{
+			return _newReplacers.ContainsKey(tagName);
 		}
 
 		private static string CleanWhiteSpace(string markdown)

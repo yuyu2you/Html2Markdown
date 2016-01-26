@@ -87,50 +87,32 @@ namespace Html2Markdown.Replacement
 			return tag.Replace("\t", "    ");
 		}
 
-		internal static string ReplaceImg(string html)
+		internal static string ReplaceImg(HtmlNode node)
 		{
-			var doc = GetHtmlDocument(html);
-			var nodes = doc.DocumentNode.SelectNodes("//img");
-			if (nodes == null) return html;
+			var src = node.Attributes.GetAttributeOrEmpty("src");
+			var alt = node.Attributes.GetAttributeOrEmpty("alt");
+			var title = node.Attributes.GetAttributeOrEmpty("title");
 
-			nodes.ToList().ForEach(node =>
-				{
-					var src = node.Attributes.GetAttributeOrEmpty("src");
-					var alt = node.Attributes.GetAttributeOrEmpty("alt");
-					var title = node.Attributes.GetAttributeOrEmpty("title");
+			var markdown = string.Format(@"![{0}]({1}{2})", alt, src, (title.Length > 0) ? string.Format(" \"{0}\"", title) : "");
 
-					var markdown = string.Format(@"![{0}]({1}{2})", alt, src, (title.Length > 0) ? string.Format(" \"{0}\"", title) : "");
-
-					ReplaceNode(node, markdown);
-				});
-
-			return doc.DocumentNode.OuterHtml;
+			return MarkdownNode(markdown).OuterHtml;
 		}
 
-		public static string ReplaceAnchor(string html)
+		public static string ReplaceAnchor(HtmlNode node)
 		{
-			var doc = GetHtmlDocument(html);
-			var nodes = doc.DocumentNode.SelectNodes("//a");
-			if (nodes == null) return html;
+			var linkText = node.InnerHtml;
+			var href = node.Attributes.GetAttributeOrEmpty("href");
+			var title = node.Attributes.GetAttributeOrEmpty("title");
 
-			nodes.ToList().ForEach(node =>
-				{
-					var linkText = node.InnerHtml;
-					var href = node.Attributes.GetAttributeOrEmpty("href");
-					var title = node.Attributes.GetAttributeOrEmpty("title");
+			var markdown = "";
 
-					var markdown = "";
+			if (!IsEmptyLink(linkText, href))
+			{
+				markdown = string.Format(@"[{0}]({1}{2})", linkText, href,
+											(title.Length > 0) ? string.Format(" \"{0}\"", title) : "");
+			}
 
-					if (!IsEmptyLink(linkText, href))
-					{
-						markdown = string.Format(@"[{0}]({1}{2})", linkText, href,
-												 (title.Length > 0) ? string.Format(" \"{0}\"", title) : "");
-					}
-
-					ReplaceNode(node, markdown);
-				});
-
-			return doc.DocumentNode.OuterHtml;
+			return MarkdownNode(markdown).OuterHtml;
 		}
 
 		public static string ReplaceCode(string html)
@@ -155,36 +137,85 @@ namespace Html2Markdown.Replacement
 			return html;
 		}
 
-		public static string ReplaceBlockquote(string html)
+		public static string ReplaceBlockquote(HtmlNode node)
 		{
-			var doc = GetHtmlDocument(html);
-			var nodes = doc.DocumentNode.SelectNodes("//blockquote");
-			if (nodes == null) return html;
+			var quote = node.InnerHtml;
+			var lines = quote.TrimStart().Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+			var markdown = "";
 
-			nodes.ToList().ForEach(node =>
+			lines.ToList().ForEach(line =>
 				{
-					var quote = node.InnerHtml;
-					var lines = quote.TrimStart().Split(new[] { Environment.NewLine }, StringSplitOptions.None);
-					var markdown = "";
-
-					lines.ToList().ForEach(line =>
-						{
-							markdown += string.Format("> {0}{1}", line.TrimEnd(), Environment.NewLine);
-						});
-
-					markdown = Regex.Replace(markdown, @"(>\s\r\n)+$", "");
-
-					markdown = Environment.NewLine + Environment.NewLine + markdown + Environment.NewLine + Environment.NewLine;
-
-					ReplaceNode(node, markdown);
+					markdown += string.Format("> {0}{1}", line.TrimEnd(), Environment.NewLine);
 				});
 
-			return doc.DocumentNode.OuterHtml;
+			markdown = Regex.Replace(markdown, @"(>\s\r\n)+$", "");
+
+			markdown = Environment.NewLine + Environment.NewLine + markdown + Environment.NewLine + Environment.NewLine;
+
+			return MarkdownNode(markdown).OuterHtml;
+		}
+
+		public static string ReplaceStrong(HtmlNode node)
+		{
+			var boldText = node.InnerHtml;
+			var markdown = string.Format("**{0}**", boldText);
+			return MarkdownNode(markdown).OuterHtml;
+		}
+
+		public static string ReplaceBreak(HtmlNode node)
+		{
+			var markdown = "  " + Environment.NewLine;
+			return MarkdownNode(markdown).OuterHtml;
 		}
 
 		public static string ReplaceEntites(string html)
 		{
 			return WebUtility.HtmlDecode(html);
+		}
+
+		public static string ReplaceEmphasis(HtmlNode node)
+		{
+			var italicText = node.InnerHtml;
+			var markdown = string.Format("*{0}*", italicText);
+			return MarkdownNode(markdown).OuterHtml;
+		}
+
+		public static string ReplaceHeading(HtmlNode node)
+		{
+			var heading = node.InnerHtml;
+			var tagName = node.Name;
+			var headerNumber = CalculateHeaderNumber(tagName);
+			var markdown = Environment.NewLine + Environment.NewLine + string.Format("{0} {1}", new String('#', headerNumber), heading) + Environment.NewLine + Environment.NewLine;
+			return MarkdownNode(markdown).OuterHtml;
+		}
+
+		public static string HorizontalRule(HtmlNode node)
+		{
+			var markdown = Environment.NewLine + Environment.NewLine + "* * *" + Environment.NewLine;
+			return MarkdownNode(markdown).OuterHtml;
+		}
+
+		public static string ReplaceParagraph(HtmlNode node)
+		{
+			var paragraph = node.InnerHtml;
+			var markdown = Environment.NewLine + Environment.NewLine + paragraph + Environment.NewLine;
+			return MarkdownNode(markdown).OuterHtml;
+		}
+
+		public static string ReplaceBody(HtmlNode node)
+		{
+			var body = node.InnerHtml;
+			return MarkdownNode(body).OuterHtml;
+		}
+
+		private static int CalculateHeaderNumber(string tagName)
+		{
+			return Int32.Parse(tagName.Substring(1));
+		}
+
+		private static HtmlNode MarkdownNode(string markdown)
+		{
+			return HtmlNode.CreateNode(markdown);
 		}
 
 		private static bool IsEmptyLink(string linkText, string href)
