@@ -727,8 +727,8 @@ a comment
 		[Test]
 		public void Convert_WhenThereIsAnAmpersandEntity_ThenReplaceWithActualCharacter()
 		{
-			const string html = @"<p>Enties like &amp; should be converted</p>";
-			const string expected = @"Enties like & should be converted";
+			const string html = @"<p>Entities like &amp; should be converted</p>";
+			const string expected = @"Entities like & should be converted";
 
 			CheckConversion(html, expected);
 		}

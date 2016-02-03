@@ -53,21 +53,13 @@ namespace Html2Markdown.Replacement
 			return NoChildren.Match(html).Success;
 		}
 
-		internal static string ReplacePre(string html)
+		public static string ReplacePre(HtmlNode node)
 		{
-			var doc = GetHtmlDocument(html);
-			var nodes = doc.DocumentNode.SelectNodes("//pre");
-			if (nodes == null) return html;
+			
+			var tagContents = node.InnerHtml;
+			var markdown = ConvertPre(tagContents);
 
-			nodes.ToList().ForEach(node =>
-				{
-					var tagContents = node.InnerHtml;
-					var markdown = ConvertPre(tagContents);
-
-					ReplaceNode(node, markdown);
-				});
-
-			return doc.DocumentNode.OuterHtml;
+			return MarkdownNode(markdown).OuterHtml;
 		}
 
 		private static string ConvertPre(string html)
@@ -110,9 +102,11 @@ namespace Html2Markdown.Replacement
 			{
 				markdown = string.Format(@"[{0}]({1}{2})", linkText, href,
 											(title.Length > 0) ? string.Format(" \"{0}\"", title) : "");
+
+				markdown = MarkdownNode(markdown).OuterHtml;
 			}
 
-			return MarkdownNode(markdown).OuterHtml;
+			return markdown;
 		}
 
 		public static string ReplaceCode(string html)
@@ -168,7 +162,7 @@ namespace Html2Markdown.Replacement
 			return MarkdownNode(markdown).OuterHtml;
 		}
 
-		public static string ReplaceEntites(string html)
+		public static string ReplaceEntities(string html)
 		{
 			return WebUtility.HtmlDecode(html);
 		}
@@ -206,6 +200,18 @@ namespace Html2Markdown.Replacement
 		{
 			var body = node.InnerHtml;
 			return MarkdownNode(body).OuterHtml;
+		}
+
+		public static string RemoveTag(HtmlNode node)
+		{
+			return "";
+		}
+
+		public static string RemoveComments(string html)
+		{
+			var regex = new Regex(@"<!--[^-]+-->");
+
+			return regex.Replace(html, "");
 		}
 
 		private static int CalculateHeaderNumber(string tagName)

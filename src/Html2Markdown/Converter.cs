@@ -114,6 +114,18 @@ namespace Html2Markdown
 							{
 								CustomAction = HtmlParser.ReplaceBody
 							}
+					},
+					{
+						"pre", new CustomReplacer
+							{
+								CustomAction = HtmlParser.ReplacePre
+							}
+					},
+					{
+						"meta", new CustomReplacer
+							{
+								CustomAction = HtmlParser.RemoveTag
+							}
 					}
 				};
 
@@ -145,28 +157,55 @@ namespace Html2Markdown
 		public string Convert(string html)
 		{
 			var document = new HtmlDocument();
-			document.LoadHtml(html);
+			document.LoadHtml(InitialClean(html));
 			var newDocument = new HtmlDocument();
 
-			foreach (var node in document.DocumentNode.ChildNodes)
-			{
-				newDocument.DocumentNode.AppendChild(HtmlNode.CreateNode(ParseElement(node)));
-			}
+			newDocument.DocumentNode.AppendChild(ParseChildren(document.DocumentNode.ChildNodes));
 
 			return CleanWhiteSpace(newDocument.DocumentNode.InnerHtml);
 		}
 
-		private string ParseElement(HtmlNode element)
+		private static string InitialClean(string html)
+		{
+			var entitiesRemoved = HtmlParser.ReplaceEntities(html);
+			var commentsRemoved = HtmlParser.RemoveComments(entitiesRemoved);
+
+			return commentsRemoved;
+		}
+
+		private HtmlNode ParseChildren(IEnumerable<HtmlNode> nodeCollection)
+		{
+			var newDocument = new HtmlDocument();
+			foreach (var node in nodeCollection)
+			{
+				if (node.HasChildNodes && node.ChildNodes.Count != 1)
+				{
+					newDocument.DocumentNode.AppendChild(ParseChildren(node.ChildNodes));
+				}
+				else
+				{
+					var converted = ParseElement(node);
+					if (converted != null)
+					{
+						newDocument.DocumentNode.AppendChild(converted);
+					}
+				}
+			}
+
+			return newDocument.DocumentNode;
+		}
+
+		private HtmlNode ParseElement(HtmlNode element)
 		{
 			var tagName = element.Name;
 			
 			if (HasTagReplacer(tagName))
 			{
 				var replacer = GetTagReplacer(tagName);
-				return replacer.Replace(element);
+				return HtmlNode.CreateNode(replacer.Replace(element));
 			}
 			
-			return element.OuterHtml;
+			return element;
 		}
 
 		private IReplacer GetTagReplacer(string tagName)
