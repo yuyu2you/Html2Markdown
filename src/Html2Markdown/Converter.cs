@@ -126,6 +126,12 @@ namespace Html2Markdown
 							{
 								CustomAction = HtmlParser.RemoveTag
 							}
+					},
+					{
+						"link", new CustomReplacer
+							{
+								CustomAction = HtmlParser.RemoveTag
+							}
 					}
 				};
 
@@ -162,15 +168,23 @@ namespace Html2Markdown
 
 			newDocument.DocumentNode.AppendChild(ParseChildren(document.DocumentNode.ChildNodes));
 
-			return CleanWhiteSpace(newDocument.DocumentNode.InnerHtml);
+			return PostClean(newDocument.DocumentNode.InnerHtml);
 		}
 
 		private static string InitialClean(string html)
 		{
-			var entitiesRemoved = HtmlParser.ReplaceEntities(html);
-			var commentsRemoved = HtmlParser.RemoveComments(entitiesRemoved);
+			var commentsRemoved = HtmlParser.RemoveComments(html);
+			var doctypeRemoved = HtmlParser.RemoveDoctype(commentsRemoved);
 
-			return commentsRemoved;
+			return doctypeRemoved;
+		}
+
+		private static string PostClean(string html)
+		{
+			var entitiesRemoved = HtmlParser.ReplaceEntities(html);
+			var whitespaceRemoved = CleanWhiteSpace(entitiesRemoved);
+
+			return whitespaceRemoved;
 		}
 
 		private HtmlNode ParseChildren(IEnumerable<HtmlNode> nodeCollection)

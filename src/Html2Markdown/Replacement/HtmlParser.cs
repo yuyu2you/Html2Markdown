@@ -214,6 +214,13 @@ namespace Html2Markdown.Replacement
 			return regex.Replace(html, "");
 		}
 
+		public static string RemoveDoctype(string html)
+		{
+			var regex = new Regex(@"<!DOCTYPE[^>]*>");
+
+			return regex.Replace(html, "");
+		}
+
 		private static int CalculateHeaderNumber(string tagName)
 		{
 			return Int32.Parse(tagName.Substring(1));

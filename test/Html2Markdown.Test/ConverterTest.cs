@@ -736,8 +736,8 @@ a comment
 		[Test]
 		public void Convert_WhenThereIsAnLessThanEntity_ThenReplaceWithActualCharacter()
 		{
-			const string html = @"<p>Enties like &lt; should be converted</p>";
-			const string expected = @"Enties like < should be converted";
+			const string html = @"<p>Entites like &lt; should be converted</p>";
+			const string expected = @"Entites like < should be converted";
 
 			CheckConversion(html, expected);
 		}
