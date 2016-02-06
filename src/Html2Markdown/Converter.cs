@@ -112,7 +112,7 @@ namespace Html2Markdown
 					{
 						"body", new CustomReplacer
 							{
-								CustomAction = HtmlParser.ReplaceBody
+								CustomAction = HtmlParser.RemoveTagLeaveChildren
 							}
 					},
 					{
@@ -131,6 +131,24 @@ namespace Html2Markdown
 						"link", new CustomReplacer
 							{
 								CustomAction = HtmlParser.RemoveTag
+							}
+					},
+					{
+						"title", new CustomReplacer
+							{
+								CustomAction = HtmlParser.RemoveTag
+							}
+					},
+					{
+						"head", new CustomReplacer
+							{
+								CustomAction = HtmlParser.RemoveTagLeaveChildren
+							}
+					},
+					{
+						"html", new CustomReplacer
+							{
+								CustomAction = HtmlParser.RemoveTagLeaveChildren
 							}
 					}
 				};
@@ -194,15 +212,14 @@ namespace Html2Markdown
 			{
 				if (node.HasChildNodes && node.ChildNodes.Count != 1)
 				{
-					newDocument.DocumentNode.AppendChild(ParseChildren(node.ChildNodes));
+					var children = ParseChildren(node.ChildNodes);
+					node.InnerHtml = children.OuterHtml;
 				}
-				else
+
+				var converted = ParseElement(node);
+				if (converted != null)
 				{
-					var converted = ParseElement(node);
-					if (converted != null)
-					{
-						newDocument.DocumentNode.AppendChild(converted);
-					}
+					newDocument.DocumentNode.AppendChild(converted);
 				}
 			}
 

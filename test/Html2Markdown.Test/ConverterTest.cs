@@ -947,6 +947,15 @@ If you want to play with this application you can fork or browse it on [GitHub](
 		}
 
 		[Test]
+		public void Convert_WhenThereAreNestedTags_ThenConvertToMarkdownAppropriately()
+		{
+			const string html = @"<strong>So<em>how was it</em>?</strong>";
+			const string expected = @"**So*how was it*?**";
+
+			CheckConversion(html, expected);
+		}
+
+		[Test]
 		public void Convert_WhenThereIsAnHtmlTable_ThenDoNotConvertContainedHtmlToMarkdown()
 		{
 			const string html = @"<table><tr><td><strong>Don't convert me</strong></td></tr></table>";
