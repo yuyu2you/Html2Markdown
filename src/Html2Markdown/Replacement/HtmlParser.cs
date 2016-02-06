@@ -109,26 +109,27 @@ namespace Html2Markdown.Replacement
 			return markdown;
 		}
 
-		public static string ReplaceCode(string html)
+		public static string ReplaceCode(HtmlNode node)
 		{
-			var singleLineCodeBlocks = new Regex(@"<code>([^\n]*?)</code>").Matches(html);
-			singleLineCodeBlocks.Cast<Match>().ToList().ForEach(block =>
+			var content = node.InnerHtml;
+			string markdown;
+			if (IsSingleLineCodeBlock(node))
 			{
-				var code = block.Value;
-				var content = GetCodeContent(code);
-				html = html.Replace(code, string.Format("`{0}`", content));
-			});
-
-			var multiLineCodeBlocks = new Regex(@"<code>([^>]*?)</code>").Matches(html);
-			multiLineCodeBlocks.Cast<Match>().ToList().ForEach(block =>
+				markdown = string.Format("`{0}`", content);
+			}
+			else
 			{
-				var code = block.Value;
-				var content = GetCodeContent(code);
-				content = IndentLines(content).TrimEnd() + Environment.NewLine + Environment.NewLine;
-				html = html.Replace(code, string.Format("{0}    {1}", Environment.NewLine, TabsToSpaces(content)));
-			});
+				markdown = IndentLines(content).TrimEnd() + Environment.NewLine + Environment.NewLine;
+				markdown = string.Format("{0}    {1}", Environment.NewLine, TabsToSpaces(markdown));
+			}
 
-			return html;
+			markdown = MarkdownNode(markdown).OuterHtml;
+			return markdown;
+		}
+
+		private static bool IsSingleLineCodeBlock(HtmlNode node)
+		{
+			return !node.InnerHtml.Contains("\n");
 		}
 
 		public static string ReplaceBlockquote(HtmlNode node)

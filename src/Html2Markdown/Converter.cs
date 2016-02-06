@@ -110,6 +110,12 @@ namespace Html2Markdown
 							}
 					},
 					{
+						"code", new CustomReplacer
+							{
+								CustomAction = HtmlParser.ReplaceCode
+							}
+					},
+					{
 						"body", new CustomReplacer
 							{
 								CustomAction = HtmlParser.RemoveTagLeaveChildren
