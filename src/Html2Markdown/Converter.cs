@@ -128,6 +128,24 @@ namespace Html2Markdown
 							}
 					},
 					{
+						"li", new CustomReplacer
+							{
+								CustomAction = HtmlParser.ReplaceListItem
+							}
+					},
+					{
+						"ol", new CustomReplacer
+							{
+								CustomAction = HtmlParser.ReplaceList
+							}
+					},
+					{
+						"ul", new CustomReplacer
+							{
+								CustomAction = HtmlParser.ReplaceList
+							}
+					},
+					{
 						"meta", new CustomReplacer
 							{
 								CustomAction = HtmlParser.RemoveTag

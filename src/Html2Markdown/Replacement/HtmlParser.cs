@@ -11,41 +11,38 @@ namespace Html2Markdown.Replacement
 	{
 		private static readonly Regex NoChildren = new Regex(@"<(ul|ol)\b[^>]*>(?:(?!<ul|<ol)[\s\S])*?<\/\1>");
 
-		internal static string ReplaceLists(string html)
+		public static string ReplaceListItem(HtmlNode node)
 		{
-			while (HasNoChildLists(html))
-			{
-				var listToReplace = NoChildren.Match(html).Value;
-				var formattedList = ReplaceList(listToReplace);
-				html = html.Replace(listToReplace, formattedList);
-			}
+			var listParent = GetListParent(node);
+			var markdown = ParseListItem(listParent, node);
 
-			return html;
+			return MarkdownNode(markdown).OuterHtml;
+
 		}
 
-		private static string ReplaceList(string html)
+		private static string ParseListItem(HtmlNode listParent, HtmlNode node)
 		{
-			var list = Regex.Match(html, @"<(ul|ol)\b[^>]*>([\s\S]*?)<\/\1>");
-			var listType = list.Groups[1].Value;
-			var listItems = list.Groups[2].Value.Split(new[] { "</li>" }, StringSplitOptions.None);
+			var prefix = listParent.Name.Equals("ol") ? "1.  " : "*   ";
+			return Environment.NewLine + prefix + node.InnerHtml;
+		}
 
-			var counter = 0;
-			var markdownList = new List<string>();
-			listItems.ToList().ForEach(listItem =>
-				{
-					var listPrefix = (listType.Equals("ol")) ? string.Format("{0}.  ", ++counter) : "*   ";
-					var finalList = Regex.Replace(listItem, @"<li[^>]*>", string.Empty);
+		private static HtmlNode GetListParent(HtmlNode node)
+		{
+			var parent = node.ParentNode;
+			var tagName = parent.Name;
+			if (tagName.Equals("ol") || tagName.Equals("ul"))
+			{
+				return parent;
+			}
 
-					if (finalList.Trim().Length == 0) return;
+			return GetListParent(parent);
+		}
 
-					finalList = Regex.Replace(finalList, @"^\s+", string.Empty);
-					finalList = Regex.Replace(finalList, @"\n{2}", string.Format("{0}{1}    ", Environment.NewLine, Environment.NewLine));
-					// indent nested lists
-					finalList = Regex.Replace(finalList, @"\n([ ]*)+(\*|\d+\.)", string.Format("{0}$1    $2", "\n"));
-					markdownList.Add(string.Format("{0}{1}", listPrefix, finalList));
-				});
-
-			return Environment.NewLine + Environment.NewLine + markdownList.Aggregate((current, item) => current + Environment.NewLine + item);
+		public static string ReplaceList(HtmlNode node)
+		{
+			var tagContents = node.InnerHtml;
+			var markdown = Environment.NewLine + tagContents;
+			return MarkdownNode(markdown).OuterHtml;
 		}
 
 		private static bool HasNoChildLists(string html)
