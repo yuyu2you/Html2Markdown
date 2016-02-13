@@ -216,7 +216,7 @@ namespace Html2Markdown
 			var newDocument = new HtmlDocument();
 			foreach (var node in nodeCollection)
 			{
-				if (node.HasChildNodes && node.ChildNodes.Count != 1)
+				if (node.HasChildNodes)
 				{
 					var children = ParseChildren(node.ChildNodes);
 					node.InnerHtml = children.OuterHtml;
