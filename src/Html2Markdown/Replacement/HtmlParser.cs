@@ -22,7 +22,7 @@ namespace Html2Markdown.Replacement
 
 		private static string ParseListItem(HtmlNode listParent, HtmlNode node)
 		{
-			var prefix = listParent.Name.Equals("ol") ? "1.  " : "*   ";
+			var prefix = listParent.Name.Equals("ol") ? "1.    " : "*    ";
 			return Environment.NewLine + prefix + node.InnerHtml;
 		}
 
