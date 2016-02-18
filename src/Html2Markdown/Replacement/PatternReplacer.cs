@@ -1,5 +1,4 @@
-﻿using System.Text.RegularExpressions;
-using HtmlAgilityPack;
+﻿using HtmlAgilityPack;
 
 namespace Html2Markdown.Replacement
 {
@@ -8,9 +7,8 @@ namespace Html2Markdown.Replacement
 		public string Pattern { get; set; }
 
 		public string Replacement { get; set; }
-		
 
-		public string Replace(HtmlNode element)
+		public string Replace(HtmlNode element, bool containsList)
 		{
 			throw new System.NotImplementedException();
 		}

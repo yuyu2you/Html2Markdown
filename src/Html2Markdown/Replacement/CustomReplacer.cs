@@ -5,11 +5,11 @@ namespace Html2Markdown.Replacement
 {
 	internal class CustomReplacer : IReplacer
 	{
-		public string Replace(HtmlNode element)
-		{
-			return CustomAction.Invoke(element);
-		}
+		public Func<HtmlNode, bool, string> CustomAction { get; set; }
 
-		public Func<HtmlNode, string> CustomAction { get; set; }
+		public string Replace(HtmlNode element, bool containsList)
+		{
+			return CustomAction.Invoke(element, containsList);
+		}
 	}
 }

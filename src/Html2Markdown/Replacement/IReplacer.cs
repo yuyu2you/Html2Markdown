@@ -4,6 +4,6 @@ namespace Html2Markdown.Replacement
 {
 	internal interface IReplacer
 	{
-		string Replace(HtmlNode element);
+		string Replace(HtmlNode element, bool containsList);
 	}
 }

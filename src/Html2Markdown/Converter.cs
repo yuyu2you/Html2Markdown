@@ -208,7 +208,7 @@ namespace Html2Markdown
 			document.LoadHtml(InitialClean(html));
 			var newDocument = new HtmlDocument();
 
-			newDocument.DocumentNode.AppendChild(ParseChildren(document.DocumentNode.ChildNodes));
+			newDocument.DocumentNode.AppendChild(ParseChildren(document.DocumentNode.ChildNodes).Node);
 
 			return PostClean(newDocument.DocumentNode.InnerHtml);
 		}
@@ -229,35 +229,55 @@ namespace Html2Markdown
 			return whitespaceRemoved;
 		}
 
-		private HtmlNode ParseChildren(IEnumerable<HtmlNode> nodeCollection)
+		private ParsedNode ParseChildren(IEnumerable<HtmlNode> nodeCollection)
 		{
 			var newDocument = new HtmlDocument();
+			var containsList = false;
 			foreach (var node in nodeCollection)
 			{
+				var parsedChildNode = new ParsedNode();
+				if (node.Name.Equals("ol") || node.Name.Equals("ul")) containsList = true;
 				if (node.HasChildNodes)
 				{
-					var children = ParseChildren(node.ChildNodes);
+					parsedChildNode = ParseChildren(node.ChildNodes);
+					var children = parsedChildNode.Node;
 					node.InnerHtml = children.OuterHtml;
 				}
 
-				var converted = ParseElement(node);
+				var converted = ParseElement(node, parsedChildNode.ContainsList);
 				if (converted != null)
 				{
 					newDocument.DocumentNode.AppendChild(converted);
 				}
 			}
 
-			return newDocument.DocumentNode;
+			return new ParsedNode
+				{
+					Node = newDocument.DocumentNode,
+					ContainsList = containsList
+				};
 		}
 
-		private HtmlNode ParseElement(HtmlNode element)
+		private class ParsedNode
+		{
+			public ParsedNode()
+			{
+				ContainsList = false;
+			}
+
+			public HtmlNode Node { get; set; }
+
+			public bool ContainsList { get; set; }
+		}
+
+		private HtmlNode ParseElement(HtmlNode element, bool containsList)
 		{
 			var tagName = element.Name;
 			
 			if (HasTagReplacer(tagName))
 			{
 				var replacer = GetTagReplacer(tagName);
-				return HtmlNode.CreateNode(replacer.Replace(element));
+				return HtmlNode.CreateNode(replacer.Replace(element, containsList));
 			}
 			
 			return element;

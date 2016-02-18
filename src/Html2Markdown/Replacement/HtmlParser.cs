@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
@@ -11,19 +10,28 @@ namespace Html2Markdown.Replacement
 	{
 		private static readonly Regex NoChildren = new Regex(@"<(ul|ol)\b[^>]*>(?:(?!<ul|<ol)[\s\S])*?<\/\1>");
 
-		public static string ReplaceListItem(HtmlNode node)
+		public static string ReplaceListItem(HtmlNode node, bool containsList)
 		{
 			var listParent = GetListParent(node);
-			var markdown = ParseListItem(listParent, node);
+			var markdown = ParseListItem(listParent, node, containsList);
 
 			return MarkdownNode(markdown).OuterHtml;
 
 		}
 
-		private static string ParseListItem(HtmlNode listParent, HtmlNode node)
+		private static string ParseListItem(HtmlNode listParent, HtmlNode node, bool containsList)
 		{
-			var prefix = listParent.Name.Equals("ol") ? "1.    " : "*    ";
-			return Environment.NewLine + prefix + node.InnerHtml;
+			string prefix;
+			if (containsList)
+			{
+				prefix = "    ";
+			}
+			else
+			{
+				prefix = (listParent.Name.Equals("ol") ? "1.    " : "*    ");
+			}
+
+			return prefix + node.InnerHtml + Environment.NewLine;
 		}
 
 		private static HtmlNode GetListParent(HtmlNode node)
@@ -38,7 +46,7 @@ namespace Html2Markdown.Replacement
 			return GetListParent(parent);
 		}
 
-		public static string ReplaceList(HtmlNode node)
+		public static string ReplaceList(HtmlNode node, bool containsList)
 		{
 			var tagContents = node.InnerHtml;
 			var markdown = Environment.NewLine + tagContents;
@@ -50,7 +58,7 @@ namespace Html2Markdown.Replacement
 			return NoChildren.Match(html).Success;
 		}
 
-		public static string ReplacePre(HtmlNode node)
+		public static string ReplacePre(HtmlNode node, bool containsList)
 		{
 			
 			var tagContents = node.InnerHtml;
@@ -76,7 +84,7 @@ namespace Html2Markdown.Replacement
 			return tag.Replace("\t", "    ");
 		}
 
-		internal static string ReplaceImg(HtmlNode node)
+		internal static string ReplaceImg(HtmlNode node, bool containsList)
 		{
 			var src = node.Attributes.GetAttributeOrEmpty("src");
 			var alt = node.Attributes.GetAttributeOrEmpty("alt");
@@ -87,7 +95,7 @@ namespace Html2Markdown.Replacement
 			return MarkdownNode(markdown).OuterHtml;
 		}
 
-		public static string ReplaceAnchor(HtmlNode node)
+		public static string ReplaceAnchor(HtmlNode node, bool containsList)
 		{
 			var linkText = node.InnerHtml;
 			var href = node.Attributes.GetAttributeOrEmpty("href");
@@ -106,7 +114,7 @@ namespace Html2Markdown.Replacement
 			return markdown;
 		}
 
-		public static string ReplaceCode(HtmlNode node)
+		public static string ReplaceCode(HtmlNode node, bool containsList)
 		{
 			var content = node.InnerHtml;
 			string markdown;
@@ -129,7 +137,7 @@ namespace Html2Markdown.Replacement
 			return !node.InnerHtml.Contains("\n");
 		}
 
-		public static string ReplaceBlockquote(HtmlNode node)
+		public static string ReplaceBlockquote(HtmlNode node, bool containsList)
 		{
 			var quote = node.InnerHtml;
 			var lines = quote.TrimStart().Split(new[] { Environment.NewLine }, StringSplitOptions.None);
@@ -147,14 +155,14 @@ namespace Html2Markdown.Replacement
 			return MarkdownNode(markdown).OuterHtml;
 		}
 
-		public static string ReplaceStrong(HtmlNode node)
+		public static string ReplaceStrong(HtmlNode node, bool containsList)
 		{
 			var boldText = node.InnerHtml;
 			var markdown = string.Format("**{0}**", boldText);
 			return MarkdownNode(markdown).OuterHtml;
 		}
 
-		public static string ReplaceBreak(HtmlNode node)
+		public static string ReplaceBreak(HtmlNode node, bool containsList)
 		{
 			var markdown = "  " + Environment.NewLine;
 			return MarkdownNode(markdown).OuterHtml;
@@ -165,14 +173,14 @@ namespace Html2Markdown.Replacement
 			return WebUtility.HtmlDecode(html);
 		}
 
-		public static string ReplaceEmphasis(HtmlNode node)
+		public static string ReplaceEmphasis(HtmlNode node, bool containsList)
 		{
 			var italicText = node.InnerHtml;
 			var markdown = string.Format("*{0}*", italicText);
 			return MarkdownNode(markdown).OuterHtml;
 		}
 
-		public static string ReplaceHeading(HtmlNode node)
+		public static string ReplaceHeading(HtmlNode node, bool containsList)
 		{
 			var heading = node.InnerHtml;
 			var tagName = node.Name;
@@ -181,26 +189,26 @@ namespace Html2Markdown.Replacement
 			return MarkdownNode(markdown).OuterHtml;
 		}
 
-		public static string HorizontalRule(HtmlNode node)
+		public static string HorizontalRule(HtmlNode node, bool containsList)
 		{
 			var markdown = Environment.NewLine + Environment.NewLine + "* * *" + Environment.NewLine;
 			return MarkdownNode(markdown).OuterHtml;
 		}
 
-		public static string ReplaceParagraph(HtmlNode node)
+		public static string ReplaceParagraph(HtmlNode node, bool containsList)
 		{
 			var paragraph = node.InnerHtml;
 			var markdown = Environment.NewLine + Environment.NewLine + paragraph + Environment.NewLine;
 			return MarkdownNode(markdown).OuterHtml;
 		}
 
-		public static string RemoveTagLeaveChildren(HtmlNode node)
+		public static string RemoveTagLeaveChildren(HtmlNode node, bool containsList)
 		{
 			var body = node.InnerHtml;
 			return MarkdownNode(body).OuterHtml;
 		}
 
-		public static string RemoveTag(HtmlNode node)
+		public static string RemoveTag(HtmlNode node, bool containsList)
 		{
 			return "";
 		}
