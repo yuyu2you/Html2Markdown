@@ -768,22 +768,6 @@ a comment
 		}
 
 		[Test]
-		public void ConvertFile_WhenReadingInHtmlFile_ThenConvertToMarkdown()
-		{
-			var sourcePath = _testPath + "TestHtml.txt";
-			const string expected = @"## Installing via NuGet
-
-        Install-Package Html2Markdown
-
-## Usage
-
-        var converter = new Converter();
-        var result = converter.Convert(html);";
-
-			CheckFileConversion(sourcePath, expected);
-		}
-
-		[Test]
 		public void Convert_ComplexTest_001()
 		{
 			const string html =
