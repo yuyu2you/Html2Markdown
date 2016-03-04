@@ -983,7 +983,7 @@ If you want to play with this application you can fork or browse it on [GitHub](
 		[Test]
 		public void ConvertFile_WhenReadingInHtmlFile_ThenConvertToMarkdown()
 		{
-			const string sourcePath = @"..\..\Files\TestHtml.txt";
+			var sourcePath = _testPath + "TestHtml.txt";
 			const string expected = @"## Installing via NuGet
 
         Install-Package Html2Markdown
