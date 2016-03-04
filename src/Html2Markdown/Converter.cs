@@ -110,15 +110,39 @@ namespace Html2Markdown
 							}
 					},
 					{
+						"code", new CustomReplacer
+							{
+								CustomAction = HtmlParser.ReplaceCode
+							}
+					},
+					{
 						"body", new CustomReplacer
 							{
-								CustomAction = HtmlParser.ReplaceBody
+								CustomAction = HtmlParser.RemoveTagLeaveChildren
 							}
 					},
 					{
 						"pre", new CustomReplacer
 							{
 								CustomAction = HtmlParser.ReplacePre
+							}
+					},
+					{
+						"li", new CustomReplacer
+							{
+								CustomAction = HtmlParser.ReplaceListItem
+							}
+					},
+					{
+						"ol", new CustomReplacer
+							{
+								CustomAction = HtmlParser.ReplaceList
+							}
+					},
+					{
+						"ul", new CustomReplacer
+							{
+								CustomAction = HtmlParser.ReplaceList
 							}
 					},
 					{
@@ -131,6 +155,24 @@ namespace Html2Markdown
 						"link", new CustomReplacer
 							{
 								CustomAction = HtmlParser.RemoveTag
+							}
+					},
+					{
+						"title", new CustomReplacer
+							{
+								CustomAction = HtmlParser.RemoveTag
+							}
+					},
+					{
+						"head", new CustomReplacer
+							{
+								CustomAction = HtmlParser.RemoveTagLeaveChildren
+							}
+					},
+					{
+						"html", new CustomReplacer
+							{
+								CustomAction = HtmlParser.RemoveTagLeaveChildren
 							}
 					}
 				};
@@ -192,17 +234,16 @@ namespace Html2Markdown
 			var newDocument = new HtmlDocument();
 			foreach (var node in nodeCollection)
 			{
-				if (node.HasChildNodes && node.ChildNodes.Count != 1)
+				if (node.HasChildNodes)
 				{
-					newDocument.DocumentNode.AppendChild(ParseChildren(node.ChildNodes));
+					var children = ParseChildren(node.ChildNodes);
+					node.InnerHtml = children.OuterHtml;
 				}
-				else
+
+				var converted = ParseElement(node);
+				if (converted != null)
 				{
-					var converted = ParseElement(node);
-					if (converted != null)
-					{
-						newDocument.DocumentNode.AppendChild(converted);
-					}
+					newDocument.DocumentNode.AppendChild(converted);
 				}
 			}
 

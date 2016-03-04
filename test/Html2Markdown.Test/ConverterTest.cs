@@ -562,7 +562,7 @@ var result = converter.Convert(html);
 			const string expected = @"This code is with an unordered list.
 
 1.  Yes
-2.  No";
+1.  No";
 
 			CheckConversion(html, expected);
 		}
@@ -587,7 +587,7 @@ var result = converter.Convert(html);
 			const string expected = @"This code is with an unordered list.
 
 1.  Yes
-2.  *   No
+1.  *   No
     *   Maybe";
 
 			CheckConversion(html, expected);
@@ -965,6 +965,15 @@ If you want to play with this application you can fork or browse it on [GitHub](
 > *“Qualquer coisa que possas fazer ou sonhar, podes começá-la. A ousadia encerra em si mesma genialidade, poder e magia.
 > Ouse fazer, e o poder lhe será dado!”*
 > **— Johann Wolfgang von Goethe**";
+
+			CheckConversion(html, expected);
+		}
+
+		[Test]
+		public void Convert_WhenThereAreNestedTags_ThenConvertToMarkdownAppropriately()
+		{
+			const string html = @"<strong>So<em>how was it</em>?</strong>";
+			const string expected = @"**So*how was it*?**";
 
 			CheckConversion(html, expected);
 		}
