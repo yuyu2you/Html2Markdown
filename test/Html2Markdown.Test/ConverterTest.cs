@@ -5,6 +5,13 @@ namespace Html2Markdown.Test
 	[TestFixture]
 	class ConverterTest
 	{
+		private string _testPath;
+
+		[SetUp]
+		public void SetUp() {
+			_testPath = TestPath();
+		}
+
 		[Test]
 		public void Convert_WhenThereAreHtmlLinks_ThenConvertToMarkDownLinks()
 		{
@@ -1005,6 +1012,14 @@ If you want to play with this application you can fork or browse it on [GitHub](
 			var result = converter.Convert(html);
 
 			Assert.That(result, Is.EqualTo(expected));
+		}
+
+		private static string TestPath()
+		{
+			var route = @"..\..\Files\";
+			var environmentPath = System.Environment.GetEnvironmentVariable("Test.Path");
+
+			return environmentPath ?? route;
 		}
 	}
 }
