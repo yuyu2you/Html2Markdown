@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Html2Markdown.Replacement;
+using HtmlAgilityPack;
 
 namespace Html2Markdown
 {
@@ -12,136 +12,15 @@ namespace Html2Markdown
 	/// </summary>
 	public class Converter
 	{
-		private readonly IList<IReplacer> _replacers = new List<IReplacer>
-		{
-			new PatternReplacer
+		private readonly IDictionary<string, IReplacer> _newReplacers = new Dictionary<string, IReplacer>
 			{
-				Pattern = @"</?(strong|b)>",
-				Replacement = @"**"
-			},
-			new PatternReplacer
-			{
-				Pattern = @"</?(em|i)>",
-				Replacement = @"*"
-			},
-			new PatternReplacer
-			{
-				Pattern = @"</h[1-6]>",
-				Replacement = Environment.NewLine + Environment.NewLine
-			},
-			new PatternReplacer
-			{
-				Pattern = @"<h1[^>]*>",
-				Replacement = Environment.NewLine + Environment.NewLine + "# "
-			},
-			new PatternReplacer
-			{
-				Pattern = @"<h2[^>]*>",
-				Replacement = Environment.NewLine + Environment.NewLine + "## "
-			},
-			new PatternReplacer
-			{
-				Pattern = @"<h3[^>]*>",
-				Replacement = Environment.NewLine + Environment.NewLine + "### "
-			},
-			new PatternReplacer
-			{
-				Pattern = @"<h4[^>]*>",
-				Replacement = Environment.NewLine + Environment.NewLine + "#### "
-			},
-			new PatternReplacer
-			{
-				Pattern = @"<h5[^>]*>",
-				Replacement = Environment.NewLine + Environment.NewLine + "##### "
-			},
-			new PatternReplacer
-			{
-				Pattern = @"<h6[^>]*>",
-				Replacement = Environment.NewLine + Environment.NewLine + "###### "
-			},
-			new PatternReplacer
-			{
-				Pattern = @"<hr[^>]*>",
-				Replacement = Environment.NewLine + Environment.NewLine + "* * *" + Environment.NewLine
-			},
-			new PatternReplacer
-			{
-				Pattern = @"<!DOCTYPE[^>]*>",
-				Replacement = ""
-			},
-			new PatternReplacer
-			{
-				Pattern = @"</?html[^>]*>",
-				Replacement = ""
-			},
-			new PatternReplacer
-			{
-				Pattern = @"</?head[^>]*>",
-				Replacement = ""
-			},
-			new PatternReplacer
-			{
-				Pattern = @"</?body[^>]*>",
-				Replacement = ""
-			},
-			new PatternReplacer
-			{
-				Pattern = @"<title[^>]*>.*?</title>",
-				Replacement = ""
-			},
-			new PatternReplacer
-			{
-				Pattern = @"<meta[^>]*>",
-				Replacement = ""
-			},
-			new PatternReplacer
-			{
-				Pattern = @"<link[^>]*>",
-				Replacement = ""
-			},
-			new PatternReplacer
-			{
-				Pattern = @"<!--[^-]+-->",
-				Replacement = ""
-			},
-			new CustomReplacer
-			{
-				CustomAction = HtmlParser.ReplaceImg
-			},
-			new CustomReplacer
-			{
-				CustomAction = HtmlParser.ReplaceLists
-			},
-			new CustomReplacer
-			{
-				CustomAction = HtmlParser.ReplaceAnchor
-			},
-			new CustomReplacer
-			{
-				CustomAction = HtmlParser.ReplaceCode
-			},
-			new CustomReplacer
-			{
-				CustomAction = HtmlParser.ReplacePre
-			},
-			new CustomReplacer
-			{
-				CustomAction = HtmlParser.ReplaceParagraph
-			},
-			new PatternReplacer
-			{
-				Pattern = @"<br[^>]*>",
-				Replacement = @"  " + Environment.NewLine
-			},
-			new CustomReplacer
-			{
-				CustomAction = HtmlParser.ReplaceBlockquote
-			},
-			new CustomReplacer
-			{
-				CustomAction = HtmlParser.ReplaceEntites
-			}
-		};
+				{
+					"strong", new CustomReplacer
+						{
+							CustomAction = HtmlParser.ReplaceStrong
+						}
+				}
+			};
 
 		/// <summary>
 		/// Converts Html contained in a file to a Markdown string
@@ -170,7 +49,38 @@ namespace Html2Markdown
 		/// <returns>A Markdown representation of the passed in Html</returns>
 		public string Convert(string html)
 		{
-			return CleanWhiteSpace(_replacers.Aggregate(html, (current, element) => element.Replace(current)));
+			var initialDocument = new HtmlDocument();
+			initialDocument.LoadHtml(html);
+			var initialDocNode = initialDocument.DocumentNode;
+			var parsedDocument = new HtmlDocument();
+
+			ParseChildren(initialDocNode, parsedDocument.DocumentNode, 0);
+
+			return parsedDocument.DocumentNode.OuterHtml;
+		}
+
+		private HtmlNodeCollection ParseChildren(HtmlNode node, HtmlNode parsedDocument, int index)
+		{
+			var parentNode = new HtmlNode(node.NodeType, parsedDocument.ParentNode, index);
+			var nodeCollection = new HtmlNodeCollection(parentNode);
+			if (node.HasChildNodes)
+			{
+				foreach (var child in node.ChildNodes)
+				{
+					var parsedChildren = ParseChildren(child, parsedDocument, 0);
+				}
+			}
+			else
+			{
+				var parsedNode = ParseNode(node, parsedDocument);
+			}
+
+			return nodeCollection;
+		}
+
+		private HtmlNode ParseNode(HtmlNode node, HtmlDocument parsedDocument)
+		{
+			return null;
 		}
 
 		private static string CleanWhiteSpace(string markdown)

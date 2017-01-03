@@ -251,5 +251,17 @@ namespace Html2Markdown.Replacement
 			var groups = match.Groups;
 			return groups[1].Value;
 		}
+
+		public static string ReplaceStrong(HtmlNode node)
+		{
+			var boldText = node.InnerHtml;
+			var markdown = string.Format("**{0}**", boldText);
+			return MarkdownNode(markdown).OuterHtml;
+		}
+
+		private static HtmlNode MarkdownNode(string markdown)
+		{
+			return HtmlNode.CreateNode(markdown);
+		}
 	}
 }
