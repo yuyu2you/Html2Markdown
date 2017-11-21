@@ -9,13 +9,13 @@ namespace Html2Markdown.Replacement
 {
 	internal static class HtmlParser
 	{
-		private static readonly Regex NoChildren = new Regex(@"<(ul|ol)\b[^>]*>(?:(?!<ul|<ol)[\s\S])*?<\/\1>");
+		private static readonly Regex HasListsPattern = new Regex(@"<(ul|ol)\b[^>]*>(?:(?!<ul|<ol)[\s\S])*?<\/\1>");
 
 		internal static string ReplaceLists(string html)
 		{
-			while (HasNoChildLists(html))
+			while (HasLists(html))
 			{
-				var listToReplace = NoChildren.Match(html).Value;
+				var listToReplace = HasListsPattern.Match(html).Value;
 				var formattedList = ReplaceList(listToReplace);
 				html = html.Replace(listToReplace, formattedList);
 			}
@@ -48,9 +48,9 @@ namespace Html2Markdown.Replacement
 			return Environment.NewLine + Environment.NewLine + markdownList.Aggregate((current, item) => current + Environment.NewLine + item);
 		}
 
-		private static bool HasNoChildLists(string html)
+		private static bool HasLists(string html)
 		{
-			return NoChildren.Match(html).Success;
+			return HasListsPattern.Match(html).Success;
 		}
 
 		internal static string ReplacePre(string html)

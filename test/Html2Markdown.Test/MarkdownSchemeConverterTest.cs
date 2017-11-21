@@ -592,7 +592,7 @@ var result = converter.Convert(html);
 			const string expected = @"This code is with an unordered list.
 
 *   Yes
-*   1.  No
+    1.  No
     2.  Maybe";
 
 			CheckConversion(html, expected);
@@ -605,8 +605,25 @@ var result = converter.Convert(html);
 			const string expected = @"This code is with an unordered list.
 
 1.  Yes
-2.  *   No
+    *   No
     *   Maybe";
+
+			CheckConversion(html, expected);
+		}
+
+		// https://github.com/baynezy/Html2Markdown/issues/73
+		[Test]
+		public void Convert_WhenThereAreNestedLists_ThenThereShouldNotBeExtraWhitespace() {
+			const string html = @"<ul>
+	  <li>Item1
+		<ul>
+		  <li>Item2</li>
+		</ul>
+	  </li>
+	</ul>";
+
+			const string expected = @"*   Item1
+    *   Item2";
 
 			CheckConversion(html, expected);
 		}
