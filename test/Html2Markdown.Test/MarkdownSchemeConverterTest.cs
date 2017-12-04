@@ -395,7 +395,11 @@ Convert it.";
 		public void Convert_WhenThereAreBlockquoteTags_ThenReplaceWithMarkDownBlockQuote()
 		{
 			const string html = @"This code has a <blockquote>blockquote</blockquote>. Convert it.";
-			var expected = @"This code has a " + Environment.NewLine + Environment.NewLine + "> blockquote" + Environment.NewLine + Environment.NewLine + ". Convert it.";
+			const string expected = @"This code has a 
+
+> blockquote
+
+. Convert it.";
 
 			CheckConversion(html, expected);
 		}
