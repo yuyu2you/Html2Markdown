@@ -29,7 +29,7 @@ namespace Html2Markdown.Test {
 		private static string TestPath()
 		{
 			const string route = @"..\..\..\Files\";
-			var environmentPath = System.Environment.GetEnvironmentVariable("Test.Path");
+			var environmentPath = System.Environment.GetEnvironmentVariable("TEST_PATH");
 
 			return environmentPath ?? route;
 		}

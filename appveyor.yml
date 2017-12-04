@@ -9,7 +9,7 @@ build:
   publish_nuget: true
   verbosity: minimal
 environment:
-  Test.Path: C:\projects\html2markdown\test\Html2Markdown.Test\Files\
+  TEST_PATH: C:\projects\html2markdown\test\Html2Markdown.Test\Files\
   GithubEmail: baynezy@gmail.com
   GithubUsername: baynezy
   GithubPersonalAccessToken:

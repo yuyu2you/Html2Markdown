@@ -1,0 +1,10 @@
+language: csharp
+mono: none
+dotnet: 1.0.4
+dist: trusty
+env:
+ - TEST_PATH="/home/travis/build/baynezy/Html2Markdown/test/Html2Markdown.Test/Files/"
+script:
+ - dotnet restore
+ - dotnet build
+ - dotnet test ./test/Html2Markdown.Test/Html2Markdown.Test.csproj
