@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Html2Markdown.Replacement;
 using Html2Markdown.Scheme;
+using AngleSharp.Parser.Html;
+using AngleSharp.Dom.Html;
 
 namespace Html2Markdown
 {
@@ -13,14 +14,12 @@ namespace Html2Markdown
 	/// </summary>
 	public class Converter
 	{
-		private IList<IReplacer> _replacers;
-		private IScheme _scheme;
-
+		
 		/// <summary>
 		/// Create a Converter with the standard Markdown conversion scheme
 		/// </summary>
 		public Converter() {
-			_replacers = new Markdown().Replacers();
+
 		}
 
 		/// <summary>
@@ -29,8 +28,7 @@ namespace Html2Markdown
 		/// <param name="scheme">Conversion scheme to control conversion</param>
 		public Converter(IScheme scheme)
 		{
-			_scheme = scheme;
-			_replacers = scheme.Replacers();
+			
 		}
 
 		/// <summary>
@@ -44,15 +42,9 @@ namespace Html2Markdown
 				using (var reader = new StreamReader(stream))
 				{
 					var html = reader.ReadToEnd();
-					html = StandardiseWhitespace(html);
 					return Convert(html);
 				}
 			}
-		}
-
-		private static string StandardiseWhitespace(string html)
-		{
-			return Regex.Replace(html, @"([^\r])\n", "$1\r\n");
 		}
 
 		/// <summary>
@@ -62,17 +54,22 @@ namespace Html2Markdown
 		/// <returns>A Markdown representation of the passed in Html</returns>
 		public string Convert(string html)
 		{
-			return CleanWhiteSpace(_replacers.Aggregate(html, (current, element) => element.Replace(current)));
+			var parser = new HtmlParser();
+			var document = parser.Parse(html);
+			var body = document.Body;
+			ParseChildren(body);
+
+			return html;
 		}
 
-		private static string CleanWhiteSpace(string markdown)
+		private bool ElementHasChildren(IHtmlElement element)
 		{
-			var cleaned = Regex.Replace(markdown, @"\r\n\s+\r\n", "\r\n\r\n");
-			cleaned = Regex.Replace(cleaned, @"(\r\n){3,}", "\r\n\r\n");
-			cleaned = Regex.Replace(cleaned, @"(> \r\n){2,}", "> \r\n");
-			cleaned = Regex.Replace(cleaned, @"^(\r\n)+", "");
-			cleaned = Regex.Replace(cleaned, @"(\r\n)+$", "");
-			return cleaned;
+			return element.HasChildNodes;
+		}
+
+		private void ParseChildren(IHtmlElement element)
+		{
+			
 		}
 	}
 }
