@@ -44,15 +44,9 @@ namespace Html2Markdown
 				using (var reader = new StreamReader(stream))
 				{
 					var html = reader.ReadToEnd();
-					html = StandardiseWhitespace(html);
 					return Convert(html);
 				}
 			}
-		}
-
-		private static string StandardiseWhitespace(string html)
-		{
-			return Regex.Replace(html, @"([^\r])\n", "$1\r\n");
 		}
 
 		/// <summary>
@@ -67,9 +61,11 @@ namespace Html2Markdown
 
 		private static string CleanWhiteSpace(string markdown)
 		{
-			var cleaned = Regex.Replace(markdown, @"\r\n\s+\r\n", "\r\n\r\n");
-			cleaned = Regex.Replace(cleaned, @"(\r\n){3,}", "\r\n\r\n");
-			cleaned = Regex.Replace(cleaned, @"(> \r\n){2,}", "> \r\n");
+			var oneNewLine = Environment.NewLine;
+			var twoNewLines = Environment.NewLine + Environment.NewLine;
+			var cleaned = Regex.Replace(markdown, @"\r\n\s+\r\n", twoNewLines);
+			cleaned = Regex.Replace(cleaned, @"(\r\n){3,}", twoNewLines);
+			cleaned = Regex.Replace(cleaned, @"(> \r\n){2,}", "> " + oneNewLine);
 			cleaned = Regex.Replace(cleaned, @"^(\r\n)+", "");
 			cleaned = Regex.Replace(cleaned, @"(\r\n)+$", "");
 			return cleaned;
