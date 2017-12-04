@@ -173,7 +173,7 @@ namespace Html2Markdown.Replacement
 							markdown += string.Format("> {0}{1}", line.TrimEnd(), Environment.NewLine);
 						});
 
-					markdown = Regex.Replace(markdown, @"(>\s\r\n)+$", "");
+					markdown = Regex.Replace(markdown, @"(>\s" + Environment.NewLine + ")+$", "");
 
 					markdown = Environment.NewLine + Environment.NewLine + markdown + Environment.NewLine + Environment.NewLine;
 
