@@ -5,6 +5,7 @@ init:
 - git config --global core.autocrlf true
 install:
 - ps: npm install -g markdownlint-cli
+- ps: choco install codecov
 build:
   publish_nuget: true
   verbosity: minimal
@@ -14,6 +15,8 @@ environment:
   GithubUsername: baynezy
   GithubPersonalAccessToken:
     secure: 9EkZYUVbHPWlMZLyUqjY79llLHc6DghntcHAodFfiMyOsIc4pbCNNEMv/lTi0SvJ
+  CodeCovUploadToken:
+    secure: CMfvSS5oD40S7KGiXgDbEIwy/d2gMcY6UxOcHWvNxC/CLe000a9TUDkoBXWCUN1p
 deploy:
 - provider: NuGet
   api_key:
@@ -33,11 +36,12 @@ build_script:
       dotnet pack .\src\Html2Markdown\Html2Markdown.csproj -c %CONFIGURATION% /p:PackageVersion=%APPVEYOR_BUILD_VERSION%
 test_script:
   - cmd: >-
-      dotnet test .\test\Html2Markdown.Test\Html2Markdown.Test.csproj --logger "trx;LogFileName=results.trx"
+      dotnet test .\test\Html2Markdown.Test\Html2Markdown.Test.csproj /p:CollectCoverage=true /p:CoverletOutputFormat=opencover --logger "trx;LogFileName=results.trx"
 after_test:
   - ps: ./pushDocumentation.ps1 $env:APPVEYOR_BUILD_FOLDER $env:GithubEmail $env:GithubUsername $env:GithubPersonalAccessToken $env:appveyor_repo_branch
 on_finish:
   - ps: ./uploadTestResults.ps1
+  - ps: .\codecov -f .\test\Html2Markdown.Test\Html2Markdown.Test.csproj -t $env:CodeCovUploadToken
 artifacts:
 - path: src\Html2Markdown\bin\Release\*.nupkg
 notifications:
