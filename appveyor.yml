@@ -15,8 +15,6 @@ environment:
   GithubUsername: baynezy
   GithubPersonalAccessToken:
     secure: 9EkZYUVbHPWlMZLyUqjY79llLHc6DghntcHAodFfiMyOsIc4pbCNNEMv/lTi0SvJ
-  CodeCovUploadToken:
-    secure: CMfvSS5oD40S7KGiXgDbEIwy/d2gMcY6UxOcHWvNxC/CLe000a9TUDkoBXWCUN1p
 deploy:
 - provider: NuGet
   api_key:
@@ -41,7 +39,7 @@ after_test:
   - ps: ./pushDocumentation.ps1 $env:APPVEYOR_BUILD_FOLDER $env:GithubEmail $env:GithubUsername $env:GithubPersonalAccessToken $env:appveyor_repo_branch
 on_finish:
   - ps: ./uploadTestResults.ps1
-  - codecov -f .\test\Html2Markdown.Test\Html2Markdown.Test.csproj -t $env:CodeCovUploadToken
+  - codecov -f .\test\Html2Markdown.Test\Html2Markdown.Test.csproj
 artifacts:
 - path: src\Html2Markdown\bin\Release\*.nupkg
 notifications:
