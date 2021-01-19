@@ -708,7 +708,16 @@ var result = converter.Convert(html);
 		}
 
 		[Test]
-		public void Convert_WhenThereAreUnorderedListsWihtoutClosingTags_ThenReplaceWithMarkdownLists()
+		public void Convert_WhenThereAreEmptyListItemsInUnorderedList_ThenReplaceListItemWithNothing()
+		{
+			const string html = @"This code is with an unordered list with empty listitem.<ul><li></li></ul>";
+			const string expected = @"This code is with an unordered list with empty listitem.";
+
+			CheckConversion(html, expected);
+		}
+
+		[Test]
+		public void Convert_WhenThereAreUnorderedListsWithoutClosingTags_ThenReplaceWithMarkdownLists()
 		{
 			const string html = @"This code is with an unordered list.<ul><li>Yes<li>No</ul>";
 			const string expected = @"This code is with an unordered list.
